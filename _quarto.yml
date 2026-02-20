@@ -1,0 +1,30 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - index.qmd
+    - api-reference.qmd
+    - topic-search.qmd
+    - examples/exploring-subfields.qmd
+
+website:
+  title: "OpenAlex API Examples"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: api-reference.qmd
+        text: API Reference
+      - href: topic-search.qmd
+        text: Topic Search
+      - href: examples/exploring-subfields.qmd
+        text: Subfield Explorer
+  page-footer:
+    center: "MIT License — Simone Santoni"
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    code-fold: true

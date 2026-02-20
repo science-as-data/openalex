@@ -1,0 +1,135 @@
+---
+title: "API Quick Reference"
+---
+
+**Base URL:** `https://api.openalex.org`
+ | **Auth:** free API key ([get one here](https://openalex.org/settings/api)) passed as `?api_key=YOUR_KEY`
+ | **Rate limits:** 100,000 credits/day, max 100 req/s
+
+## Entities
+
+| Entity       | Count  | Canonical ID | Endpoint        |
+| ------------ | ------ | ------------ | --------------- |
+| Works        | 240 M+ | DOI          | `/works`        |
+| Authors      | —      | ORCID        | `/authors`      |
+| Sources      | 249 K  | ISSN-L       | `/sources`      |
+| Institutions | 109 K  | ROR ID       | `/institutions` |
+| Topics       | ~4,500 | —            | `/topics`       |
+| Publishers   | ~10 K  | Wikidata ID  | `/publishers`   |
+| Funders      | ~32 K  | —            | `/funders`      |
+
+## Key operations
+
+### Get a single entity
+
+```http
+GET /works/W2741809807
+GET /works/https://doi.org/10.7717/peerj.4375
+GET /authors/https://orcid.org/0000-0003-1613-5981
+```
+
+Accepts OpenAlex IDs, DOIs, ORCIDs, ROR IDs, ISSN-Ls, and Wikidata IDs. Costs **0 credits**.
+
+### List entities (paginated)
+
+```http
+GET /works?per-page=50&page=2
+```
+
+Default 25/page, max 200. Basic paging supports up to 10,000 results. For larger sets use **cursor paging**: start with `?cursor=*` and follow `next_cursor`.
+
+### Filter
+
+```http
+GET /works?filter=publication_year:2024,cited_by_count:>100,open_access.is_oa:true
+```
+
+| Operator | Syntax | Example |
+|----------|--------|---------|
+| AND      | comma  | `field1:val1,field2:val2` |
+| OR       | pipe   | `type:article\|review` |
+| NOT      | `!`    | `country_code:!us` |
+| Inequality | `<` / `>` | `cited_by_count:>50` |
+| Date range | `from_` / `to_` | `from_publication_date:2020-01-01` |
+
+### Search
+
+```http
+GET /works?search=machine+learning
+```
+
+Searches titles, abstracts, and fulltext. Supports `AND`, `OR`, `NOT`, exact phrases in quotes, and `.no_stem` mode. Results ranked by `relevance_score`.
+
+### Sort
+
+```http
+GET /works?sort=cited_by_count:desc
+```
+
+Sort fields: `display_name`, `cited_by_count`, `works_count`, `publication_date`, `relevance_score` (search only).
+
+### Group by
+
+```http
+GET /works?group_by=type
+```
+
+Returns faceted counts instead of individual results.
+
+### Select fields
+
+```http
+GET /works?select=id,doi,display_name,cited_by_count
+```
+
+Reduces the response to only the requested root-level fields.
+
+### Semantic search
+
+```http
+GET /find/works?query=effects+of+climate+change+on+crop+yields
+```
+
+AI-powered similarity search across ~217 M works using vector embeddings. Returns results with similarity scores (0–1). Supports POST for queries up to 10,000 characters.
+
+## Credit costs
+
+| Operation                       | Credits |
+| ------------------------------- | ------: |
+| Single entity lookup            |       0 |
+| List query                      |       1 |
+| Search                          |      10 |
+| Semantic search (`/find/works`) |   1,000 |
+| Content download (PDF/XML)      |     100 |
+
+## Sample record
+
+A single work fetched via `GET /works/W2741809807`:
+
+```json
+{
+  "id": "https://openalex.org/W2741809807",
+  "doi": "https://doi.org/10.7717/peerj.4375",
+  "title": "The state of OA: a large-scale analysis of the prevalence and impact of Open Access articles",
+  "publication_year": 2018,
+  "type": "book-chapter",
+  "open_access": {
+    "is_oa": true,
+    "oa_status": "gold",
+    "oa_url": "https://doi.org/10.7717/peerj.4375"
+  },
+  "cited_by_count": 1149,
+  "primary_topic": {
+    "id": "https://openalex.org/T10102",
+    "display_name": "scientometrics and bibliometrics research",
+    "subfield": { "display_name": "Statistics, Probability and Uncertainty" },
+    "field": { "display_name": "Decision Sciences" },
+    "domain": { "display_name": "Social Sciences" }
+  }
+}
+```
+
+## Further reading
+
+- [Official API docs](https://docs.openalex.org/)
+- [Data snapshot](https://docs.openalex.org/) — free monthly database download

@@ -1,0 +1,198 @@
+---
+title: "Topic Search"
+---
+
+## Topic hierarchy
+
+OpenAlex classifies every work into a **four-level taxonomy**, from broadest to most specific:
+
+| Level        | Count | Example                              |
+| ------------ | ----: | ------------------------------------ |
+| **Domain**   |     4 | Physical Sciences                    |
+| **Field**    |    26 | Physics and Astronomy                |
+| **Subfield** |   200 | Nuclear and High Energy Physics      |
+| **Topic**    | 4,516 | Magnetic confinement fusion research |
+
+### The four domains
+
+| Domain            | Topics |
+| ----------------- | -----: |
+| Physical Sciences |  1,571 |
+| Social Sciences   |  1,487 |
+| Health Sciences   |    844 |
+| Life Sciences     |    614 |
+
+## How topics are assigned
+
+OpenAlex uses an automated classifier that scores every work across all ~4,500 topics based on the work's **title, abstract, source (journal) name, and citations**.
+
+- `primary_topic` — the single highest-scoring topic, including its `score` (0–1) and full hierarchy (subfield → field → domain)
+- `topics` — a list of additional highly ranked topics, each with their own score and hierarchy
+
+```json
+{
+  "primary_topic": {
+    "id": "https://openalex.org/T10346",
+    "display_name": "Magnetic confinement fusion research",
+    "score": 0.9991,
+    "subfield": { "display_name": "Nuclear and High Energy Physics" },
+    "field":    { "display_name": "Physics and Astronomy" },
+    "domain":   { "display_name": "Physical Sciences" }
+  }
+}
+```
+
+## Topic object structure
+
+Each topic entity (`/topics/{id}`) contains:
+
+| Field            | Description                                       |
+| ---------------- | ------------------------------------------------- |
+| `id`             | OpenAlex URI (e.g. `https://openalex.org/T10346`) |
+| `display_name`   | English-language label                            |
+| `description`    | AI-generated summary of the paper cluster         |
+| `keywords`       | AI-generated representative terms                 |
+| `ids`            | External identifiers (OpenAlex, Wikipedia)        |
+| `subfield`       | Parent subfield (`id` + `display_name`)           |
+| `field`          | Parent field                                      |
+| `domain`         | Parent domain                                     |
+| `siblings`       | Other topics in the same subfield                 |
+| `works_count`    | Number of works tagged with this topic            |
+| `cited_by_count` | Total citations across tagged works               |
+| `works_api_url`  | API URL to retrieve works for this topic          |
+
+## Useful API queries
+
+```bash
+# List all topics
+curl "https://api.openalex.org/topics"
+
+# Search topics by name
+curl "https://api.openalex.org/topics?search=machine+learning"
+
+# Get topics grouped by domain
+curl "https://api.openalex.org/topics?group_by=domain.id"
+
+# Filter works by a specific topic
+curl "https://api.openalex.org/works?filter=topics.id:T10346"
+
+# Filter works by primary topic only
+curl "https://api.openalex.org/works?filter=primary_topic.id:T10346"
+
+# Filter works by subfield
+curl "https://api.openalex.org/works?filter=primary_topic.subfield.id:3106"
+```
+
+## CLI tool: `get_subfields.py`
+
+The repository includes a command-line utility for querying subfields interactively.
+
+### Usage
+
+```bash
+# List all 26 fields
+python topicSearch/get_subfields.py --list
+
+# Look up by name
+python topicSearch/get_subfields.py "Computer Science"
+
+# Look up by numeric ID
+python topicSearch/get_subfields.py 17
+```
+
+### Source
+
+```{.python filename="topicSearch/get_subfields.py"}
+"""Retrieve the subfields associated with an OpenAlex field.
+
+Usage:
+    python get_subfields.py "Computer Science"
+    python get_subfields.py 17              # field ID number
+    python get_subfields.py --list          # list all fields
+"""
+
+import argparse
+import sys
+import requests
+
+BASE_URL = "https://api.openalex.org"
+
+
+def list_fields():
+    """Print all available fields."""
+    resp = requests.get(f"{BASE_URL}/fields", params={"per_page": 50})
+    resp.raise_for_status()
+    fields = resp.json()["results"]
+    print(f"{'ID':<6} {'Field':<45} {'Domain'}")
+    print("-" * 80)
+    for f in sorted(fields, key=lambda x: x["display_name"]):
+        fid = f["id"].split("/")[-1]
+        print(f"{fid:<6} {f['display_name']:<45} {f['domain']['display_name']}")
+
+
+def resolve_field(query):
+    """Resolve a field by numeric ID or search string. Returns the field object."""
+    if query.isdigit():
+        resp = requests.get(f"{BASE_URL}/fields/{query}")
+        if resp.status_code == 404:
+            sys.exit(f"No field found with ID {query}")
+        resp.raise_for_status()
+        return resp.json()
+
+    resp = requests.get(f"{BASE_URL}/fields", params={"search": query})
+    resp.raise_for_status()
+    results = resp.json()["results"]
+    if not results:
+        sys.exit(f"No field found matching '{query}'")
+    return results[0]
+
+
+def get_subfields(field):
+    """Fetch subfields for a field, including topic counts."""
+    field_id = field["id"].split("/")[-1]
+    resp = requests.get(
+        f"{BASE_URL}/subfields",
+        params={"filter": f"field.id:{field_id}", "per_page": 50},
+    )
+    resp.raise_for_status()
+    return resp.json()["results"]
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Get subfields for an OpenAlex field")
+    parser.add_argument("field", nargs="?", help="Field name (search) or numeric ID")
+    parser.add_argument("--list", action="store_true", help="List all available fields")
+    args = parser.parse_args()
+
+    if args.list:
+        list_fields()
+        return
+
+    if not args.field:
+        parser.print_help()
+        sys.exit(1)
+
+    field = resolve_field(args.field)
+    print(f"\nField: {field['display_name']}")
+    print(f"Domain: {field['domain']['display_name']}\n")
+
+    subfields = get_subfields(field)
+    print(f"{'ID':<6} {'Subfield':<50} {'Topics':>8}  {'Works':>12}")
+    print("-" * 80)
+    for sf in sorted(subfields, key=lambda x: x["works_count"], reverse=True):
+        sfid = sf["id"].split("/")[-1]
+        n_topics = len(sf.get("topics", []))
+        print(f"{sfid:<6} {sf['display_name']:<50} {n_topics:>8}  {sf['works_count']:>12,}")
+
+    print(f"\nTotal: {len(subfields)} subfields")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## References
+
+- [OpenAlex Topics docs](https://docs.openalex.org/api-entities/topics)
+- [Topic object reference](https://docs.openalex.org/api-entities/topics/topic-object)
+- Paper: *OpenAlex: End-to-End Process for Topic Classification*
