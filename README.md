@@ -2,7 +2,7 @@
 
 Python snippets for exploring 240M+ scholarly works via the [OpenAlex](https://openalex.org/) API.
 
-**Website**: [https://simonesantoni.github.io/openalex/](https://simonesantoni.github.io/openalex/)
+**Website**: [https://science-as-data.github.io/openalex/](https://science-as-data.github.io/openalex/)
 
 ## What's here
 
@@ -13,7 +13,7 @@ Python snippets for exploring 240M+ scholarly works via the [OpenAlex](https://o
 ## Quick start
 
 ```bash
-git clone https://github.com/simoneSantoni/openalex.git
+git clone https://github.com/science-as-data/openalex.git
 cd openalex
 
 python -m venv .venv && source .venv/bin/activate

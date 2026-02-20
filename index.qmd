@@ -238,7 +238,7 @@ aws s3 sync "s3://openalex" "openalex-snapshot" --no-sign-request
 
 ```bash
 # clone the repo
-git clone https://github.com/<you>/openalex.git
+git clone https://github.com/science-as-data/openalex.git
 cd openalex
 
 # set up a virtual environment
@@ -254,4 +254,4 @@ python topicSearch/get_subfields.py "Computer Science"
 
 - [OpenAlex](https://openalex.org/) — the platform
 - [Official API docs](https://docs.openalex.org/) — full reference
-- [GitHub repo](https://github.com/simone-santoni/openalex) — source code
+- [GitHub repo](https://github.com/science-as-data/openalex) — source code

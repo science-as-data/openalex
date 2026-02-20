@@ -9,6 +9,8 @@ project:
 
 website:
   title: "OpenAlex API Examples"
+  repo-url: https://github.com/science-as-data/openalex
+  repo-actions: [source, issue]
   navbar:
     left:
       - href: index.qmd
@@ -19,6 +21,9 @@ website:
         text: Topic Search
       - href: examples/exploring-subfields.qmd
         text: Subfield Explorer
+    right:
+      - icon: github
+        href: https://github.com/science-as-data/openalex
   page-footer:
     center: "MIT License — Simone Santoni"
 
