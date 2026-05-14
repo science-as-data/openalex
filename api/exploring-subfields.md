@@ -1,25 +1,23 @@
----
-title: "Exploring Research Subfields with the OpenAlex API"
-author: "Simon"
-date: today
-description: |
-  This notebook uses the `/subfields` endpoint to retrieve and visualise the
-  research subfields that make up four major academic fields: Physics and
-  Astronomy, Agricultural and Biological Sciences, Biochemistry, Genetics and
-  Molecular Biology, and Economics, Econometrics and Finance.
-code-fold: true
----
+# Exploring Research Subfields with the OpenAlex API
+
+This walkthrough uses the `/subfields` and `/works` endpoints to retrieve and
+visualise the research subfields that make up four major academic fields:
+Physics and Astronomy, Agricultural and Biological Sciences, Biochemistry,
+Genetics and Molecular Biology, and Economics, Econometrics and Finance.
+
+The code below is presented as documentation — copy it into a script or a
+notebook to run it. It needs an API key in a `.env` file at the repo root
+(`OPENALEX_API_KEY`, optionally `OPENALEX_MAILTO`). The fetch steps write 15
+CSVs to `api/data/`; the analysis steps read those CSVs back and chart them.
 
 ## Setup
 
-We start by defining the fields we want to explore and two helper functions.
 `FIELDS` maps each field name to its OpenAlex identifier. `get_subfields()`
 queries the `/subfields` endpoint for a given field and returns the results as a
 DataFrame with columns for the field name, subfield name, and work count.
 `plot_subfields()` renders a horizontal bar chart from that DataFrame.
 
-```{python}
-#| eval: false
+```python
 import os
 import time
 import httpx
@@ -161,16 +159,14 @@ def plot_works_by_source(df: pd.DataFrame):
         spine.set_visible(False)
     plt.tight_layout()
     plt.show()
-
 ```
 
 ## Fetch data
 
-We loop over the four fields and collect subfield breakdowns, yearly publication
+Loop over the four fields and collect subfield breakdowns, yearly publication
 counts, and top sources for each one.
 
-```{python}
-#| eval: false
+```python
 from tqdm.auto import tqdm
 
 dfs = {}
@@ -184,13 +180,12 @@ for name, fid in tqdm(FIELDS.items(), total=len(FIELDS), desc="Fields"):
 
 ## Save to CSV
 
-Persists all three datasets to the `data/` directory — one CSV per field plus a
+Persist all three datasets to the `data/` directory — one CSV per field plus a
 combined file for each dataset (subfields, works-by-year, works-by-source),
-giving 15 files in total. The combined files are what the Field-level analysis
+giving 15 files in total. The combined files are what the field-level analysis
 section reads back via `pd.read_csv()`.
 
-```{python}
-#| eval: false
+```python
 from pathlib import Path
 
 data_dir = Path("data")
@@ -233,10 +228,10 @@ print(f"Saved {len(all_sources):>5,} rows to {path} (combined)")
 ## Field-level analysis
 
 The visualisations below are driven by the CSV files saved in the previous
-steps. Re-run the *Fetch data* and *Save to CSV* cells when you need to refresh
+steps. Re-run the *Fetch data* and *Save to CSV* steps when you need to refresh
 the underlying data.
 
-```{python}
+```python
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -247,54 +242,6 @@ all_sources = pd.read_csv("data/works-by-source.csv")
 dfs = {name: g.reset_index(drop=True) for name, g in all_subfields.groupby("Field")}
 yearly = {name: g.reset_index(drop=True) for name, g in all_yearly.groupby("Field")}
 sources = {name: g.reset_index(drop=True) for name, g in all_sources.groupby("Field")}
-
-BAR_HEIGHT = 0.25
-
-
-def plot_subfields(df: pd.DataFrame):
-    fig_h = max(2, len(df) * BAR_HEIGHT + 1)
-    fig, ax = plt.subplots(figsize=(6, fig_h))
-    ax.barh(df["Subfield"][::-1], df["Works"][::-1], color="#9e9e9e")
-    ax.set_xlabel("Number of works")
-    ax.grid(axis="x", color="#b0bec5", linewidth=0.5, linestyle="--")
-    ax.set_axisbelow(True)
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    plt.tight_layout()
-    plt.show()
-
-
-def plot_works_by_year(df: pd.DataFrame):
-    fig, ax = plt.subplots(figsize=(6, 3))
-    ax.fill_between(df["Year"], df["Works"], alpha=0.3, color="#e67e22")
-    ax.plot(df["Year"], df["Works"], color="#e67e22", linewidth=1.5)
-    ax.set_xlabel("Publication year")
-    ax.set_ylabel("Number of works")
-    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{x:,.0f}"))
-    ax.grid(axis="y", color="#b0bec5", linewidth=0.5, linestyle="--")
-    ax.set_axisbelow(True)
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    plt.tight_layout()
-    plt.show()
-
-
-TOP_N_SOURCES = 20
-
-
-def plot_works_by_source(df: pd.DataFrame):
-    top = df.head(TOP_N_SOURCES)
-    fig_h = max(2, len(top) * BAR_HEIGHT + 1)
-    fig, ax = plt.subplots(figsize=(6, fig_h))
-    ax.barh(top["Source"][::-1], top["Works"][::-1], color="#2980b9")
-    ax.set_xlabel("Number of works")
-    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{x:,.0f}"))
-    ax.grid(axis="x", color="#b0bec5", linewidth=0.5, linestyle="--")
-    ax.set_axisbelow(True)
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    plt.tight_layout()
-    plt.show()
 
 
 def table_top_sources(df: pd.DataFrame):
@@ -321,142 +268,25 @@ def plot_source_rank_freq(df: pd.DataFrame):
     plt.show()
 ```
 
-### Physics and Astronomy
+For each field, the four views are: annual distribution of works, a top-sources
+table, the rank–frequency distribution of sources (log–log), and the subfields
+ranked by number of works.
 
-```{python}
-#| output: asis
-total = dfs["Physics and Astronomy"]["Works"].sum()
-n_sources = len(sources["Physics and Astronomy"])
-print(f"OpenAlex entity: [fields/31](https://openalex.org/fields/31) | {total:,} total works | {n_sources:,} unique journals | Subfields data: [CSV](data/subfields.csv)")
-```
+```python
+for field, entity in [
+    ("Physics and Astronomy", "fields/31"),
+    ("Agricultural and Biological Sciences", "fields/11"),
+    ("Biochemistry, Genetics and Molecular Biology", "fields/13"),
+    ("Economics, Econometrics and Finance", "fields/20"),
+]:
+    total = dfs[field]["Works"].sum()
+    n_sources = len(sources[field])
+    print(f"\n## {field}")
+    print(f"OpenAlex entity: https://openalex.org/{entity} | "
+          f"{total:,} total works | {n_sources:,} unique journals")
 
-```{python}
-#| label: fig-physics-yearly
-#| fig-cap: "Annual distribution of works in Physics and Astronomy."
-#| fig-cap-location: margin
-plot_works_by_year(yearly["Physics and Astronomy"])
-```
-
-```{python}
-#| output: asis
-table_top_sources(sources["Physics and Astronomy"])
-```
-
-```{python}
-#| label: fig-physics-rankfreq
-#| fig-cap: "Rank–frequency distribution of sources in Physics and Astronomy (log–log)."
-#| fig-cap-location: margin
-plot_source_rank_freq(sources["Physics and Astronomy"])
-```
-
-```{python}
-#| label: fig-physics
-#| fig-cap: "Subfields of Physics and Astronomy ranked by number of works."
-#| fig-cap-location: margin
-plot_subfields(dfs["Physics and Astronomy"])
-```
-
-### Agricultural and Biological Sciences
-
-```{python}
-#| output: asis
-total = dfs["Agricultural and Biological Sciences"]["Works"].sum()
-n_sources = len(sources["Agricultural and Biological Sciences"])
-print(f"OpenAlex entity: [fields/11](https://openalex.org/fields/11) | {total:,} total works | {n_sources:,} unique journals | Subfields data: [CSV](data/subfields.csv)")
-```
-
-```{python}
-#| label: fig-agbio-yearly
-#| fig-cap: "Annual distribution of works in Agricultural and Biological Sciences."
-#| fig-cap-location: margin
-plot_works_by_year(yearly["Agricultural and Biological Sciences"])
-```
-
-```{python}
-#| output: asis
-table_top_sources(sources["Agricultural and Biological Sciences"])
-```
-
-```{python}
-#| label: fig-agbio-rankfreq
-#| fig-cap: "Rank–frequency distribution of sources in Agricultural and Biological Sciences (log–log)."
-#| fig-cap-location: margin
-plot_source_rank_freq(sources["Agricultural and Biological Sciences"])
-```
-
-```{python}
-#| label: fig-agbio
-#| fig-cap: "Subfields of Agricultural and Biological Sciences ranked by number of works."
-#| fig-cap-location: margin
-plot_subfields(dfs["Agricultural and Biological Sciences"])
-```
-
-### Biochemistry, Genetics and Molecular Biology
-
-```{python}
-#| output: asis
-total = dfs["Biochemistry, Genetics and Molecular Biology"]["Works"].sum()
-n_sources = len(sources["Biochemistry, Genetics and Molecular Biology"])
-print(f"OpenAlex entity: [fields/13](https://openalex.org/fields/13) | {total:,} total works | {n_sources:,} unique journals | Subfields data: [CSV](data/subfields.csv)")
-```
-
-```{python}
-#| label: fig-biochem-yearly
-#| fig-cap: "Annual distribution of works in Biochemistry, Genetics and Molecular Biology."
-#| fig-cap-location: margin
-plot_works_by_year(yearly["Biochemistry, Genetics and Molecular Biology"])
-```
-
-```{python}
-#| output: asis
-table_top_sources(sources["Biochemistry, Genetics and Molecular Biology"])
-```
-
-```{python}
-#| label: fig-biochem-rankfreq
-#| fig-cap: "Rank–frequency distribution of sources in Biochemistry, Genetics and Molecular Biology (log–log)."
-#| fig-cap-location: margin
-plot_source_rank_freq(sources["Biochemistry, Genetics and Molecular Biology"])
-```
-
-```{python}
-#| label: fig-biochem
-#| fig-cap: "Subfields of Biochemistry, Genetics and Molecular Biology ranked by number of works."
-#| fig-cap-location: margin
-plot_subfields(dfs["Biochemistry, Genetics and Molecular Biology"])
-```
-
-### Economics, Econometrics and Finance
-
-```{python}
-#| output: asis
-total = dfs["Economics, Econometrics and Finance"]["Works"].sum()
-n_sources = len(sources["Economics, Econometrics and Finance"])
-print(f"OpenAlex entity: [fields/20](https://openalex.org/fields/20) | {total:,} total works | {n_sources:,} unique journals | Subfields data: [CSV](data/subfields.csv)")
-```
-
-```{python}
-#| label: fig-econ-yearly
-#| fig-cap: "Annual distribution of works in Economics, Econometrics and Finance."
-#| fig-cap-location: margin
-plot_works_by_year(yearly["Economics, Econometrics and Finance"])
-```
-
-```{python}
-#| output: asis
-table_top_sources(sources["Economics, Econometrics and Finance"])
-```
-
-```{python}
-#| label: fig-econ-rankfreq
-#| fig-cap: "Rank–frequency distribution of sources in Economics, Econometrics and Finance (log–log)."
-#| fig-cap-location: margin
-plot_source_rank_freq(sources["Economics, Econometrics and Finance"])
-```
-
-```{python}
-#| label: fig-econ
-#| fig-cap: "Subfields of Economics, Econometrics and Finance ranked by number of works."
-#| fig-cap-location: margin
-plot_subfields(dfs["Economics, Econometrics and Finance"])
+    plot_works_by_year(yearly[field])
+    table_top_sources(sources[field])
+    plot_source_rank_freq(sources[field])
+    plot_subfields(dfs[field])
 ```

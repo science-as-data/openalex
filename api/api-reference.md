@@ -1,10 +1,8 @@
----
-title: "API Quick Reference"
----
+# API Quick Reference
 
 **Base URL:** `https://api.openalex.org`
- | **Auth:** free API key ([get one here](https://openalex.org/settings/api)) passed as `?api_key=YOUR_KEY`
- | **Rate limits:** 100,000 credits/day, max 100 req/s
+| **Auth:** free API key ([get one here](https://openalex.org/settings/api)) passed as `?api_key=YOUR_KEY`
+| **Rate limits:** 100,000 credits/day, max 100 req/s
 
 ## Entities
 
@@ -129,7 +127,9 @@ A single work fetched via `GET /works/W2741809807`:
 }
 ```
 
+See [../index.qmd sample record](../README.md#sample-record) for the full annotated 50-field structure.
+
 ## Further reading
 
 - [Official API docs](https://docs.openalex.org/)
-- [Data snapshot](https://docs.openalex.org/) — free monthly database download
+- [Data snapshot](https://docs.openalex.org/download-all-data/openalex-snapshot) — free monthly database download
