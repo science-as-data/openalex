@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1180" font-family="-apple-system, system-ui, 'Segoe UI', sans-serif" font-size="12">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+    </marker>
+    <marker id="arrow-self" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/>
+    </marker>
+    <style>
+      .card        { stroke: #1f2937; stroke-width: 1.2; rx: 8; ry: 8; }
+      .title       { font-weight: 700; font-size: 13px; fill: #0b1220; }
+      .subtitle    { font-size: 10.5px; fill: #475569; }
+      .row         { font-size: 11px; fill: #1f2937; }
+      .row-fk      { font-size: 10.5px; fill: #64748b; font-style: italic; }
+      .row-empty   { fill: #94a3b8; }
+      .legend-box  { stroke: #1f2937; stroke-width: 1; rx: 3; ry: 3; }
+      .fk-line     { stroke: #444; stroke-width: 1.2; fill: none; opacity: 0.7; }
+      .fk-self     { stroke: #c2410c; stroke-width: 1.4; fill: none; }
+      .fk-label    { font-size: 10px; fill: #1e293b; }
+      .group-fill-lookup     { fill: #e0f2fe; }
+      .group-fill-deprecated { fill: #f1f5f9; }
+      .group-fill-authors    { fill: #dcfce7; }
+      .group-fill-works      { fill: #ffedd5; }
+      .group-fill-org        { fill: #cffafe; }
+      .group-fill-awards     { fill: #ede9fe; }
+    </style>
+  </defs>
+
+  <!-- ============ Title ============ -->
+  <text x="40" y="34" font-size="22" font-weight="700" fill="#0b1220">OpenAlex Postgres schema — <tspan fill="#475569">50 tables, RELEASE 2026-03-30</tspan></text>
+  <text x="40" y="56" font-size="12.5" fill="#475569">10 entity clusters. Each card = main table + child (1-to-many) tables. Italic rows are cross-entity foreign keys; arrows show only the cross-cluster joins.</text>
+
+  <!-- ============ LOOKUP HIERARCHY ============ -->
+  <g>
+    <rect class="card group-fill-lookup" x="40" y="90" width="220" height="232"/>
+    <text class="title" x="56" y="112">Topic hierarchy</text>
+    <text class="subtitle" x="56" y="128">lookup, deterministic IDs</text>
+    <line x1="56" y1="136" x2="244" y2="136" stroke="#94a3b8"/>
+    <text class="row" x="56" y="156">domains <tspan class="subtitle">(4)</tspan></text>
+    <text class="row" x="56" y="178">fields <tspan class="subtitle">(26)</tspan></text>
+    <text class="row-fk" x="70" y="192">↑ fk: domain_id</text>
+    <text class="row" x="56" y="214">subfields <tspan class="subtitle">(252)</tspan></text>
+    <text class="row-fk" x="70" y="228">↑ fk: field_id</text>
+    <text class="row" x="56" y="250">topics <tspan class="subtitle">(4,516)</tspan></text>
+    <text class="row-fk" x="70" y="264">↑ fk: subfield_id, field_id, domain_id</text>
+    <text class="row" x="56" y="296">keywords <tspan class="subtitle">(65 K)</tspan></text>
+    <text class="row-fk" x="70" y="310">(flat, no hierarchy)</text>
+  </g>
+
+  <!-- ============ CONCEPTS (deprecated) ============ -->
+  <g>
+    <rect class="card group-fill-deprecated" x="40" y="345" width="220" height="100"/>
+    <text class="title" x="56" y="367">Concepts <tspan class="subtitle" font-style="italic">— deprecated</tspan></text>
+    <text class="subtitle" x="56" y="383">superseded by topics</text>
+    <line x1="56" y1="391" x2="244" y2="391" stroke="#94a3b8"/>
+    <text class="row" x="56" y="411">concepts <tspan class="subtitle">(65 K)</tspan></text>
+    <text class="row" x="56" y="431">concepts_ids</text>
+  </g>
+
+  <!-- ============ AUTHORS ============ -->
+  <g>
+    <rect class="card group-fill-authors" x="40" y="475" width="380" height="240"/>
+    <text class="title" x="56" y="497">Authors</text>
+    <text class="subtitle" x="56" y="513">people who produced works</text>
+    <line x1="56" y1="521" x2="404" y2="521" stroke="#94a3b8"/>
+    <text class="row" x="56" y="541">authors <tspan class="subtitle">(113.6 M)</tspan></text>
+    <text class="row" x="56" y="563">authors_ids</text>
+    <text class="row" x="56" y="585">authors_counts_by_year <tspan class="subtitle">(311.6 M)</tspan></text>
+    <text class="row" x="56" y="607">authors_last_known_institutions <tspan class="subtitle">(61.2 M)</tspan></text>
+    <text class="row-fk" x="70" y="621">→ fk: institution_id</text>
+    <text class="row" x="56" y="643">authors_affiliations <tspan class="subtitle">(140 M)</tspan></text>
+    <text class="row-fk" x="70" y="657">→ fk: institution_id</text>
+    <text class="row" x="56" y="679">authors_topics <tspan class="subtitle">(374 M)</tspan></text>
+    <text class="row-fk" x="70" y="693">→ fk: topic_id</text>
+  </g>
+
+  <!-- ============ WORKS (centerpiece) ============ -->
+  <g>
+    <rect class="card group-fill-works" x="450" y="90" width="600" height="800"/>
+    <text class="title" x="466" y="112">Works — the heart of the catalog</text>
+    <text class="subtitle" x="466" y="128">scholarly outputs: articles, books, datasets, …</text>
+    <line x1="466" y1="136" x2="1034" y2="136" stroke="#94a3b8"/>
+
+    <text class="row" x="466" y="156">works <tspan class="subtitle">(492.4 M)</tspan></text>
+    <text class="row-fk" x="480" y="170">→ fk: primary_topic_id, primary_location_source_id</text>
+
+    <text class="row" x="466" y="194">works_ids <tspan class="subtitle">(492.4 M)</tspan></text>
+    <text class="row" x="466" y="216">works_biblio <tspan class="subtitle">(492.4 M)</tspan> — volume, issue, pages</text>
+    <text class="row" x="466" y="238">works_open_access <tspan class="subtitle">(492.4 M)</tspan></text>
+    <text class="row" x="466" y="260">works_counts_by_year <tspan class="subtitle">(452 M)</tspan></text>
+
+    <text class="row" x="466" y="294">works_locations <tspan class="subtitle">(630 M)</tspan> — every host of the work</text>
+    <text class="row-fk" x="480" y="308">→ fk: source_id</text>
+
+    <text class="row" x="466" y="332">works_authorships <tspan class="subtitle">(780 M)</tspan></text>
+    <text class="row-fk" x="480" y="346">→ fk: author_id</text>
+    <text class="row" x="466" y="368">works_authorship_institutions <tspan class="subtitle">(568 M)</tspan></text>
+    <text class="row-fk" x="480" y="382">→ fk: author_id, institution_id</text>
+    <text class="row" x="466" y="404">works_authorship_countries <tspan class="subtitle">(462 M)</tspan></text>
+    <text class="row-fk" x="480" y="418">→ fk: author_id</text>
+
+    <text class="row" x="466" y="442">works_topics <tspan class="subtitle">(1.03 B)</tspan></text>
+    <text class="row-fk" x="480" y="456">→ fk: topic_id</text>
+    <text class="row" x="466" y="478">works_keywords <tspan class="subtitle">(2.98 B)</tspan></text>
+    <text class="row-fk" x="480" y="492">→ fk: keyword_id</text>
+    <text class="row" x="466" y="514">works_concepts <tspan class="subtitle">(4.92 B)</tspan></text>
+    <text class="row-fk" x="480" y="528">→ fk: concept_id</text>
+
+    <text class="row" x="466" y="552">works_sdgs <tspan class="subtitle">(180 M)</tspan> — UN SDG tags</text>
+    <text class="row" x="466" y="574">works_mesh <tspan class="subtitle">(1.21 B)</tspan> — biomedical MeSH tags</text>
+
+    <text class="row" x="466" y="608">works_awards <tspan class="subtitle">(60.7 M)</tspan></text>
+    <text class="row-fk" x="480" y="622">→ fk: award_id</text>
+
+    <text class="row" x="466" y="646">works_referenced_works <tspan class="subtitle">(3.04 B)</tspan></text>
+    <text class="row-fk" x="480" y="660">→ fk: referenced_work_id → works (self)</text>
+    <text class="row" x="466" y="682">works_related_works <tspan class="subtitle">(2.49 B)</tspan></text>
+    <text class="row-fk" x="480" y="696">→ fk: related_work_id (no FK constraint)</text>
+
+    <line x1="466" y1="720" x2="1034" y2="720" stroke="#94a3b8" stroke-dasharray="3 3"/>
+    <text class="subtitle" x="466" y="740" font-style="italic">Tables intentionally not modeled (zeroed out by walden snapshot 2025-11-12):</text>
+    <text class="row-empty row" x="466" y="760">works_grants — replaced by awards + works_awards</text>
+    <text class="row-empty row" x="466" y="780">concepts_ancestors, concepts_related_concepts, concepts_counts_by_year — null</text>
+
+    <!-- works self-references: pretty curve -->
+    <path class="fk-self" marker-end="url(#arrow-self)"
+          d="M 1040 658 Q 1090 658 1090 400 Q 1090 156 1054 156"/>
+    <text class="fk-label" x="1058" y="395" fill="#c2410c">cites / related → works</text>
+  </g>
+
+  <!-- ============ SOURCES ============ -->
+  <g>
+    <rect class="card group-fill-org" x="1080" y="90" width="380" height="110"/>
+    <text class="title" x="1096" y="112">Sources</text>
+    <text class="subtitle" x="1096" y="128">journals, repositories, conferences</text>
+    <line x1="1096" y1="136" x2="1444" y2="136" stroke="#94a3b8"/>
+    <text class="row" x="1096" y="156">sources <tspan class="subtitle">(280 K)</tspan></text>
+    <text class="row" x="1096" y="178">sources_ids · sources_counts_by_year</text>
+  </g>
+
+  <!-- ============ INSTITUTIONS ============ -->
+  <g>
+    <rect class="card group-fill-org" x="1080" y="220" width="380" height="200"/>
+    <text class="title" x="1096" y="242">Institutions</text>
+    <text class="subtitle" x="1096" y="258">universities, labs, hospitals, companies</text>
+    <line x1="1096" y1="266" x2="1444" y2="266" stroke="#94a3b8"/>
+    <text class="row" x="1096" y="286">institutions <tspan class="subtitle">(121 K)</tspan></text>
+    <text class="row" x="1096" y="308">institutions_ids</text>
+    <text class="row" x="1096" y="330">institutions_geo</text>
+    <text class="row" x="1096" y="352">institutions_counts_by_year <tspan class="subtitle">(1.26 M)</tspan></text>
+    <text class="row" x="1096" y="374">institutions_associated_institutions</text>
+    <text class="row" x="1096" y="396">institutions_roles · institutions_repositories</text>
+  </g>
+
+  <!-- ============ PUBLISHERS ============ -->
+  <g>
+    <rect class="card group-fill-org" x="1080" y="440" width="380" height="110"/>
+    <text class="title" x="1096" y="462">Publishers</text>
+    <text class="subtitle" x="1096" y="478">parent companies of sources</text>
+    <line x1="1096" y1="486" x2="1444" y2="486" stroke="#94a3b8"/>
+    <text class="row" x="1096" y="506">publishers <tspan class="subtitle">(10.7 K)</tspan></text>
+    <text class="row" x="1096" y="528">publishers_ids · publishers_counts_by_year · publishers_roles</text>
+  </g>
+
+  <!-- ============ FUNDERS ============ -->
+  <g>
+    <rect class="card group-fill-org" x="1080" y="570" width="380" height="110"/>
+    <text class="title" x="1096" y="592">Funders</text>
+    <text class="subtitle" x="1096" y="608">grant-issuing organizations</text>
+    <line x1="1096" y1="616" x2="1444" y2="616" stroke="#94a3b8"/>
+    <text class="row" x="1096" y="636">funders <tspan class="subtitle">(32 K)</tspan></text>
+    <text class="row" x="1096" y="658">funders_ids · funders_counts_by_year · funders_roles</text>
+  </g>
+
+  <!-- ============ AWARDS ============ -->
+  <g>
+    <rect class="card group-fill-awards" x="1080" y="700" width="380" height="130"/>
+    <text class="title" x="1096" y="722">Awards</text>
+    <text class="subtitle" x="1096" y="738">grants / awards (new in 2026-03)</text>
+    <line x1="1096" y1="746" x2="1444" y2="746" stroke="#94a3b8"/>
+    <text class="row" x="1096" y="766">awards <tspan class="subtitle">(12.2 M)</tspan></text>
+    <text class="row-fk" x="1110" y="780">→ fk: funder_id</text>
+    <text class="row" x="1096" y="804">awards_investigators <tspan class="subtitle">(4.7 M)</tspan></text>
+    <text class="row-fk" x="1110" y="818">→ fk: award_id</text>
+  </g>
+
+  <!-- ============ CROSS-CLUSTER FK ARROWS ============ -->
+  <!-- works → topics -->
+  <path class="fk-line" marker-end="url(#arrow)" d="M 450 446 C 380 446 320 280 260 270"/>
+  <!-- works → keywords -->
+  <path class="fk-line" marker-end="url(#arrow)" d="M 450 482 C 380 482 320 305 260 300"/>
+  <!-- works → concepts -->
+  <path class="fk-line" marker-end="url(#arrow)" d="M 450 518 C 380 518 320 420 260 416"/>
+  <!-- works → authors -->
+  <path class="fk-line" marker-end="url(#arrow)" d="M 450 340 C 430 340 430 540 420 540"/>
+  <!-- works_authorship_institutions → institutions  -->
+  <path class="fk-line" marker-end="url(#arrow)" d="M 1050 374 C 1075 374 1075 320 1080 320"/>
+  <!-- works → sources (via primary_location_source_id + works_locations) -->
+  <path class="fk-line" marker-end="url(#arrow)" d="M 1050 160 C 1070 160 1070 150 1080 150"/>
+  <!-- works_awards → awards -->
+  <path class="fk-line" marker-end="url(#arrow)" d="M 1050 612 C 1070 612 1070 760 1080 760"/>
+  <!-- awards → funders -->
+  <path class="fk-line" marker-end="url(#arrow)" d="M 1270 700 C 1270 680 1270 690 1270 680"/>
+  <!-- authors → institutions (last_known + affiliations) -->
+  <path class="fk-line" marker-end="url(#arrow)" d="M 420 610 C 700 610 1000 320 1080 320"/>
+  <!-- authors → topics -->
+  <path class="fk-line" marker-end="url(#arrow)" d="M 420 680 C 350 680 280 480 260 282"/>
+
+  <!-- ============ LEGEND ============ -->
+  <g transform="translate(40, 945)">
+    <rect class="card" x="0" y="0" width="1420" height="200" fill="#fafafa"/>
+    <text class="title" x="16" y="22">Legend &amp; reading guide</text>
+
+    <!-- swatches -->
+    <rect class="legend-box group-fill-lookup"     x="16" y="40" width="22" height="14"/>
+    <text class="row" x="46" y="52">lookup / hierarchy</text>
+    <rect class="legend-box group-fill-deprecated" x="180" y="40" width="22" height="14"/>
+    <text class="row" x="210" y="52">deprecated</text>
+    <rect class="legend-box group-fill-authors"    x="310" y="40" width="22" height="14"/>
+    <text class="row" x="340" y="52">people (authors)</text>
+    <rect class="legend-box group-fill-org"        x="470" y="40" width="22" height="14"/>
+    <text class="row" x="500" y="52">organizations (sources, institutions, publishers, funders)</text>
+    <rect class="legend-box group-fill-works"      x="870" y="40" width="22" height="14"/>
+    <text class="row" x="900" y="52">works (the bulk of the data)</text>
+    <rect class="legend-box group-fill-awards"     x="1140" y="40" width="22" height="14"/>
+    <text class="row" x="1170" y="52">awards / grants</text>
+
+    <!-- notation -->
+    <text class="row" x="16" y="86" font-weight="700">Conventions</text>
+    <text class="row" x="16" y="106">• Card title = main entity table. Below the divider: every child (1-to-many) table that hangs off it.</text>
+    <text class="row" x="16" y="124">• <tspan font-style="italic" fill="#64748b">Italic grey rows</tspan> annotate the foreign-key columns on the table directly above them; "(self)" means it points back into the same table.</text>
+    <text class="row" x="16" y="142">• Arrows between cards (<tspan fill="#444">→</tspan>) show cross-cluster joins. Parent→child arrows within a card are omitted — they're always on the child's <tspan font-family="monospace">*_id</tspan> column.</text>
+    <text class="row" x="16" y="160">• Numbers in parentheses are live row counts from the loaded DB. Tables with no number are small lookups or per-entity wide rows.</text>
+    <text class="row" x="16" y="178">• FKs are declared <tspan font-family="monospace">NOT VALID</tspan> in <tspan font-family="monospace">scripts/sql/03_add_foreign_keys.sql</tspan> — present for introspection tools, not enforced (snapshots routinely contain orphan refs).</text>
+  </g>
+</svg>
