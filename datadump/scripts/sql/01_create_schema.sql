@@ -93,27 +93,6 @@ CREATE TABLE openalex.concepts_ids (
     mag bigint
 );
 
-DROP TABLE IF EXISTS openalex.concepts_ancestors CASCADE;
-CREATE TABLE openalex.concepts_ancestors (
-    concept_id text,
-    ancestor_id text
-);
-
-DROP TABLE IF EXISTS openalex.concepts_related_concepts CASCADE;
-CREATE TABLE openalex.concepts_related_concepts (
-    concept_id text,
-    related_concept_id text,
-    score real
-);
-
-DROP TABLE IF EXISTS openalex.concepts_counts_by_year CASCADE;
-CREATE TABLE openalex.concepts_counts_by_year (
-    concept_id text,
-    year integer,
-    works_count bigint,
-    cited_by_count bigint
-);
-
 DROP TABLE IF EXISTS openalex.institutions CASCADE;
 CREATE TABLE openalex.institutions (
     id text,
@@ -585,14 +564,6 @@ CREATE TABLE openalex.works_mesh (
     qualifier_ui text,
     qualifier_name text,
     is_major_topic boolean
-);
-
-DROP TABLE IF EXISTS openalex.works_grants CASCADE;
-CREATE TABLE openalex.works_grants (
-    work_id text,
-    funder_id text,
-    funder_display_name text,
-    award_id text
 );
 
 DROP TABLE IF EXISTS openalex.works_awards CASCADE;

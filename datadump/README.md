@@ -146,6 +146,25 @@ it, so the CSVs and the schema can never drift apart. The generated
 `sql/01_create_schema.sql` and `sql/02_create_indexes.sql` are committed for
 review; regenerate with `python gen_sql.py schema|indexes`.
 
+### Tables intentionally not modeled
+
+Four child tables that an earlier draft of the schema included are **not**
+created, because the walden-format snapshot (RELEASE 2025-11-12 onwards) no
+longer ships the underlying arrays:
+
+| Dropped table | What replaced it |
+|---|---|
+| `works_grants` | `awards` + `works_awards` — same per-work funder/award info, normalized into a top-level `awards` entity (12 M rows, 60 M links). For the old "one row per (work, funder, award_id)" shape, join `works_awards` to `awards`. |
+| `concepts_ancestors` | nothing — array is `null` in every record |
+| `concepts_related_concepts` | nothing — array is `null` in every record |
+| `concepts_counts_by_year` | nothing — array is `null` in every record |
+
+Concepts are deprecated; their main table and `concepts_ids` are still
+populated, but the nested arrays have been zeroed out in the dump. To recover
+them you'd need either a pre-walden snapshot (the S3 bucket only keeps the
+latest release, so an external mirror) or a re-fetch from the live API
+(`/concepts/C…` still returns the arrays).
+
 ## `scripts/` contents
 
 | File | Purpose |

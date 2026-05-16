@@ -102,17 +102,6 @@ TABLES = {
             ("wikipedia", "text"), ("umls_aui", "jsonb"), ("umls_cui", "jsonb"),
             ("mag", "bigint"),
         ],
-        "concepts_ancestors": [
-            ("concept_id", "text"), ("ancestor_id", "text"),
-        ],
-        "concepts_related_concepts": [
-            ("concept_id", "text"), ("related_concept_id", "text"),
-            ("score", "real"),
-        ],
-        "concepts_counts_by_year": [
-            ("concept_id", "text"), ("year", "integer"),
-            ("works_count", "bigint"), ("cited_by_count", "bigint"),
-        ],
     },
     "institutions": {
         "institutions": [
@@ -372,10 +361,6 @@ TABLES = {
             ("descriptor_name", "text"), ("qualifier_ui", "text"),
             ("qualifier_name", "text"), ("is_major_topic", "boolean"),
         ],
-        "works_grants": [
-            ("work_id", "text"), ("funder_id", "text"),
-            ("funder_display_name", "text"), ("award_id", "text"),
-        ],
         "works_awards": [
             ("work_id", "text"), ("award_id", "text"),
         ],
@@ -485,20 +470,6 @@ def extract_concepts(d):
             "umls_aui": j(ids.get("umls_aui")), "umls_cui": j(ids.get("umls_cui")),
             "mag": ids.get("mag"),
         }]
-    out["concepts_ancestors"] = [
-        {"concept_id": cid, "ancestor_id": a["id"]}
-        for a in (d.get("ancestors") or []) if a.get("id")
-    ]
-    out["concepts_related_concepts"] = [
-        {"concept_id": cid, "related_concept_id": r["id"], "score": r.get("score")}
-        for r in (d.get("related_concepts") or []) if r.get("id")
-    ]
-    out["concepts_counts_by_year"] = [
-        {"concept_id": cid, "year": c.get("year"),
-         "works_count": c.get("works_count"),
-         "cited_by_count": c.get("cited_by_count")}
-        for c in (d.get("counts_by_year") or [])
-    ]
     return out
 
 
@@ -909,12 +880,6 @@ def extract_works(d):
          "is_major_topic": m.get("is_major_topic")}
         for m in (d.get("mesh") or [])
     ]
-    out["works_grants"] = [
-        {"work_id": wid, "funder_id": g.get("funder"),
-         "funder_display_name": g.get("funder_display_name"),
-         "award_id": g.get("award_id")}
-        for g in (d.get("grants") or [])
-    ]
     awards = []
     for aw in (d.get("awards") or []):
         award_id = aw.get("id") if isinstance(aw, dict) else aw
@@ -965,9 +930,6 @@ POST_LOAD_INDEXES = {
     "concepts": {
         "concepts": [("pk", ["id"])],
         "concepts_ids": [("pk", ["concept_id"])],
-        "concepts_ancestors": [("idx", ["concept_id"]), ("idx", ["ancestor_id"])],
-        "concepts_related_concepts": [("idx", ["concept_id"])],
-        "concepts_counts_by_year": [("pk", ["concept_id", "year"])],
     },
     "institutions": {
         "institutions": [("pk", ["id"]), ("idx", ["ror"]),
@@ -1031,7 +993,6 @@ POST_LOAD_INDEXES = {
         "works_concepts": [("idx", ["work_id"]), ("idx", ["concept_id"])],
         "works_sdgs": [("idx", ["work_id"])],
         "works_mesh": [("idx", ["work_id"])],
-        "works_grants": [("idx", ["work_id"]), ("idx", ["funder_id"])],
         "works_awards": [("idx", ["work_id"]), ("idx", ["award_id"])],
         "works_referenced_works": [("idx", ["work_id"]),
                                    ("idx", ["referenced_work_id"])],

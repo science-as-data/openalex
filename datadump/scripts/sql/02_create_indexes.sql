@@ -15,10 +15,6 @@ ALTER TABLE openalex.keywords ADD PRIMARY KEY (id);
 
 ALTER TABLE openalex.concepts ADD PRIMARY KEY (id);
 ALTER TABLE openalex.concepts_ids ADD PRIMARY KEY (concept_id);
-CREATE INDEX IF NOT EXISTS concepts_ancestors_concept_id_idx ON openalex.concepts_ancestors (concept_id);
-CREATE INDEX IF NOT EXISTS concepts_ancestors_ancestor_id_idx ON openalex.concepts_ancestors (ancestor_id);
-CREATE INDEX IF NOT EXISTS concepts_related_concepts_concept_id_idx ON openalex.concepts_related_concepts (concept_id);
-ALTER TABLE openalex.concepts_counts_by_year ADD PRIMARY KEY (concept_id, year);
 
 ALTER TABLE openalex.institutions ADD PRIMARY KEY (id);
 CREATE INDEX IF NOT EXISTS institutions_ror_idx ON openalex.institutions (ror);
@@ -90,8 +86,6 @@ CREATE INDEX IF NOT EXISTS works_concepts_work_id_idx ON openalex.works_concepts
 CREATE INDEX IF NOT EXISTS works_concepts_concept_id_idx ON openalex.works_concepts (concept_id);
 CREATE INDEX IF NOT EXISTS works_sdgs_work_id_idx ON openalex.works_sdgs (work_id);
 CREATE INDEX IF NOT EXISTS works_mesh_work_id_idx ON openalex.works_mesh (work_id);
-CREATE INDEX IF NOT EXISTS works_grants_work_id_idx ON openalex.works_grants (work_id);
-CREATE INDEX IF NOT EXISTS works_grants_funder_id_idx ON openalex.works_grants (funder_id);
 CREATE INDEX IF NOT EXISTS works_awards_work_id_idx ON openalex.works_awards (work_id);
 CREATE INDEX IF NOT EXISTS works_awards_award_id_idx ON openalex.works_awards (award_id);
 CREATE INDEX IF NOT EXISTS works_referenced_works_work_id_idx ON openalex.works_referenced_works (work_id);
