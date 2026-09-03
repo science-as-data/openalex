@@ -8,7 +8,7 @@ OpenAlex classifies every work into a **four-level taxonomy**, from broadest to 
 | ------------ | ----: | ------------------------------------ |
 | **Domain**   |     4 | Physical Sciences                    |
 | **Field**    |    26 | Physics and Astronomy                |
-| **Subfield** |   200 | Nuclear and High Energy Physics      |
+| **Subfield** |   252 | Nuclear and High Energy Physics      |
 | **Topic**    | 4,516 | Magnetic confinement fusion research |
 
 ### The four domains

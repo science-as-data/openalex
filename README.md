@@ -1,16 +1,20 @@
 # OpenAlex
 
 Notes, examples, and tools for working with [OpenAlex](https://openalex.org/) —
-a free, open catalog of the world's scholarly research (240 M+ works: journal
+a free, open catalog of the world's scholarly research (490 M+ works: journal
 articles, books, datasets, theses; updated daily).
 
 This is a working repo for my own and collaborators' use, not a published site.
-It is organized around the **two ways to access OpenAlex**:
+It is organized around the **two ways to access OpenAlex**, plus one
+cross-database task:
 
 - [`api/`](api/) — the live REST API: lookups, filtered lists, search, the topic
   taxonomy, and a CLI tool.
-- [`datadump/`](datadump/) — the bulk S3 snapshot: downloading and querying the
-  full catalog locally (scaffold, in progress).
+- [`datadump/`](datadump/) — the bulk S3 snapshot: a pipeline that downloads the
+  ~712 GB snapshot and loads it into a normalized PostgreSQL schema.
+- [`matching/`](matching/) — matching journal names across OpenAlex and Scopus,
+  to sample journals and their articles by Scopus metadata such as discipline
+  (in progress).
 
 ## Contents
 
@@ -24,7 +28,13 @@ It is organized around the **two ways to access OpenAlex**:
 
 ### `datadump/` — the bulk S3 snapshot
 
-- [datadump/README.md](datadump/README.md) — what the dump contains, how to download it, on-disk layout (scaffold)
+- [datadump/README.md](datadump/README.md) — what the dump contains, on-disk layout, the load procedure, and the relational schema
+- [datadump/scripts/](datadump/scripts/) — download, flatten, and load scripts; `oa_schema.py` is the schema's source of truth
+- [datadump/db_schema.svg](datadump/db_schema.svg) — ERD of the loaded database
+
+### `matching/` — OpenAlex ↔ Scopus journal matching
+
+- [matching/README.md](matching/README.md) — goal and approach (in progress)
 
 ## Setup
 
@@ -55,7 +65,7 @@ OPENALEX_MAILTO=your_email   # optional, for the polite pool
 - **Rate limits:** 100,000 credits/day, max 100 req/s
 - **Credit costs:** single entity = 0, list = 1, search = 10, semantic search = 1,000
 - **Entities:** Works, Authors, Sources, Institutions, Topics, Publishers, Funders
-- **Topic hierarchy:** Domain (4) → Field (26) → Subfield (200) → Topic (~4,500)
+- **Topic hierarchy:** Domain (4) → Field (26) → Subfield (252) → Topic (~4,500)
 - **Cursor paging** for >10K results: `?cursor=*`, follow `next_cursor`
 - **Filter operators:** AND (comma), OR (pipe), NOT (`!`), inequality (`<`/`>`)
 

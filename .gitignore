@@ -208,3 +208,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# matching/: cached Scopus API responses and downloaded Source List (never commit)
+matching/cache/

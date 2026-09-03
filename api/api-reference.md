@@ -8,7 +8,7 @@
 
 | Entity       | Count  | Canonical ID | Endpoint        |
 | ------------ | ------ | ------------ | --------------- |
-| Works        | 240 M+ | DOI          | `/works`        |
+| Works        | 490 M+ | DOI          | `/works`        |
 | Authors      | —      | ORCID        | `/authors`      |
 | Sources      | 249 K  | ISSN-L       | `/sources`      |
 | Institutions | 109 K  | ROR ID       | `/institutions` |

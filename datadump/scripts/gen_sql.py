@@ -5,8 +5,13 @@
     python gen_sql.py indexes                      # ALTER TABLE ... PK + CREATE INDEX
     python gen_sql.py copy --csv DIR [--entity X]   # \\copy commands
 
-`make_sql.sh` writes the first two to sql/ for review; `load.sh` pipes the
-`copy` output straight into psql per entity.
+Regenerate the committed files after editing oa_schema.py:
+
+    python gen_sql.py schema  > sql/01_create_schema.sql
+    python gen_sql.py indexes > sql/02_create_indexes.sql
+
+`load.sh` pipes the `copy` output straight into psql per entity.
+(sql/03_add_foreign_keys.sql is hand-maintained, not generated.)
 """
 
 import argparse
